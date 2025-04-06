@@ -6,7 +6,11 @@ import { IssueServiceInterface } from '../../issue-service-interface';
 import { GithubApiService } from './github-api.service';
 import { IssueProviderGithub, SearchResultItem } from '../../issue.model';
 import { GithubCfg } from './github.model';
-import { GithubIssue, GithubIssueReduced } from './github-issue/github-issue.model';
+import {
+  GithubDiscussion,
+  GithubIssue,
+  GithubIssueReduced,
+} from './github-issue/github-issue.model';
 import { truncate } from '../../../../util/truncate';
 import { getTimestamp } from '../../../../util/get-timestamp';
 import { isGithubEnabled } from './is-github-enabled.util';
@@ -39,7 +43,10 @@ export class GithubCommonInterfacesService implements IssueServiceInterface {
     );
   }
 
-  getById$(issueId: number, issueProviderId: string): Observable<GithubIssue> {
+  getById$(
+    issueId: number,
+    issueProviderId: string,
+  ): Observable<GithubIssue | GithubDiscussion> {
     return this._getCfgOnce$(issueProviderId).pipe(
       concatMap((githubCfg) => this._githubApiService.getById$(issueId, githubCfg)),
     );
@@ -60,7 +67,7 @@ export class GithubCommonInterfacesService implements IssueServiceInterface {
 
   async getFreshDataForIssueTask(task: Task): Promise<{
     taskChanges: Partial<Task>;
-    issue: GithubIssue;
+    issue: GithubIssue | GithubDiscussion;
     issueTitle: string;
   } | null> {
     if (!task.issueProviderId) {
@@ -109,7 +116,9 @@ export class GithubCommonInterfacesService implements IssueServiceInterface {
 
   async getFreshDataForIssueTasks(
     tasks: Task[],
-  ): Promise<{ task: Task; taskChanges: Partial<Task>; issue: GithubIssue }[]> {
+  ): Promise<
+    { task: Task; taskChanges: Partial<Task>; issue: GithubIssue | GithubDiscussion }[]
+  > {
     return Promise.all(
       tasks.map((task) =>
         this.getFreshDataForIssueTask(task).then((refreshDataForTask) => ({

@@ -19,6 +19,7 @@ import {
 } from './github-issue/github-issue-map.util';
 import {
   GithubComment,
+  GithubDiscussion,
   GithubIssue,
   GithubIssueReduced,
 } from './github-issue/github-issue.model';
@@ -41,7 +42,7 @@ export class GithubApiService {
     issueId: number,
     cfg: GithubCfg,
     isGetComments: boolean = true,
-  ): Observable<GithubIssue> {
+  ): Observable<GithubIssue | GithubDiscussion> {
     return this._sendRequest$(
       {
         url: `${BASE}repos/${cfg.repo}/issues/${issueId}`,
@@ -50,18 +51,42 @@ export class GithubApiService {
     ).pipe(
       switchMap((issue) =>
         isGetComments
-          ? this.getCommentListForIssue$(issueId, cfg).pipe(
+          ? this.getCommentList$('issues', issueId, cfg).pipe(
               map((comments) => ({ ...issue, comments })),
             )
           : of(issue),
       ),
+      catchError((error) => {
+        if (error.status === 404) {
+          // If issue is not found, try fetching discussions
+          return this._sendRequest$(
+            {
+              url: `${BASE}repos/${cfg.repo}/discussions/${issueId}`,
+            },
+            cfg,
+          ).pipe(
+            switchMap((discussion) =>
+              isGetComments
+                ? this.getCommentList$('discussions', issueId, cfg).pipe(
+                    map((comments) => ({ ...discussion, comments })),
+                  )
+                : of(discussion),
+            ),
+          );
+        }
+        return throwError(error);
+      }),
     );
   }
 
-  getCommentListForIssue$(issueId: number, cfg: GithubCfg): Observable<GithubComment[]> {
+  getCommentList$(
+    type: string,
+    issueId: number,
+    cfg: GithubCfg,
+  ): Observable<GithubComment[]> {
     return this._sendRequest$(
       {
-        url: `${BASE}repos/${cfg.repo}/issues/${issueId}/comments`,
+        url: `${BASE}repos/${cfg.repo}/${type}/${issueId}/comments`,
       },
       cfg,
     ).pipe();

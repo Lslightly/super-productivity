@@ -5,6 +5,7 @@ import {
 import { JiraCfg } from './providers/jira/jira.model';
 import { GithubCfg } from './providers/github/github.model';
 import {
+  GithubDiscussion,
   GithubIssue,
   GithubIssueReduced,
 } from './providers/github/github-issue/github-issue.model';
@@ -77,6 +78,7 @@ export interface IssueIntegrationCfgs {
 export type IssueData =
   | JiraIssue
   | GithubIssue
+  | GithubDiscussion
   | GitlabIssue
   | CaldavIssue
   | ICalIssue

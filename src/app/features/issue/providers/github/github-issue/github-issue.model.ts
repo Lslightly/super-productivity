@@ -61,3 +61,34 @@ export type GithubIssue = GithubIssueReduced &
     // added via extra request??
     comments: GithubComment[];
   }>;
+
+export type GithubDiscussion = GithubIssueReduced &
+  Readonly<{
+    number: number;
+    repository_url: string;
+    // labels_url: string;
+    // comments_url: string;
+    // events_url: string; // in answer_chosen_by.events_url
+    html_url: string;
+    body: string;
+    labels: GithubLabel[];
+    // milestone: GithubMileStone;
+    locked: boolean;
+    active_lock_reason: string;
+    // pull_request: GithubPullRequest;
+    // closed_at: string;
+    created_at: string;
+    user: GithubUser;
+    // assignee: GithubUser;
+
+    // added TODO check if we can remove them
+    commentsNr: number;
+    apiUrl: string;
+    _id: number;
+
+    // transformed
+    url: string;
+
+    // added via extra request??
+    comments: GithubComment[];
+  }>;
